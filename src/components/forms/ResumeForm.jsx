@@ -1200,6 +1200,7 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
                 <p className="text-red-500 text-sm mt-1">{errors.languages[i]}</p>
               )}
             </div>
+            <div className="flex-1 min-w-0">
             <select
               className="input w-48 flex-shrink-0"
               value={lang.proficiency}
@@ -1212,6 +1213,7 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
               <option value="Intermediate">Intermediate</option>
               <option value="Basic">Basic</option>
             </select>
+            </div>
             <button
               onClick={() => removeLanguage(i)}
               className="text-gray-400 hover:text-red-500 flex-shrink-0 px-2"
