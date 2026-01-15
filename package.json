@@ -1,0 +1,33 @@
+{
+  "name": "resume-builder",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "autoprefixer": "^10.4.23",
+    "bcrypt": "^6.0.0",
+    "dom-to-image-more": "^3.7.2",
+    "jspdf": "^4.0.0",
+    "mongoose": "^9.1.2",
+    "next": "16.1.1",
+    "next-auth": "^4.24.13",
+    "postcss": "^8.5.6",
+    "puppeteer": "^24.35.0",
+    "react": "19.2.3",
+    "react-datepicker": "^9.1.0",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "dotenv": "^17.2.3",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.1",
+    "tailwindcss": "^4.1.18"
+  }
+}
