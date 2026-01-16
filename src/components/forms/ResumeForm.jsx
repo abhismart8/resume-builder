@@ -359,6 +359,162 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
           }
         }
         break;
+      case 'year':
+        if (section === 'education' && index !== null) {
+          const eduErrors = newErrors.education || [];
+          if (value && value.trim()) {
+            const yearRegex = /^\d{4}$/;
+            if (!yearRegex.test(value)) {
+              eduErrors[index] = eduErrors[index] || {};
+              eduErrors[index].year = 'Please enter a valid year (YYYY)';
+            } else {
+              const year = parseInt(value);
+              if (year < 1900 || year > new Date().getFullYear() + 10) {
+                eduErrors[index] = eduErrors[index] || {};
+                eduErrors[index].year = `Year must be between 1900 and ${new Date().getFullYear() + 10}`;
+              } else {
+                if (eduErrors[index]) {
+                  delete eduErrors[index].year;
+                  if (Object.keys(eduErrors[index]).length === 0) {
+                    eduErrors[index] = undefined;
+                  }
+                }
+              }
+            }
+          } else {
+            if (eduErrors[index]) {
+              delete eduErrors[index].year;
+              if (Object.keys(eduErrors[index]).length === 0) {
+                eduErrors[index] = undefined;
+              }
+            }
+          }
+          newErrors.education = eduErrors.filter(error => error !== undefined);
+          if (newErrors.education.length === 0) {
+            delete newErrors.education;
+          }
+        }
+        break;
+      case 'projectLink':
+        if (section === 'projects' && index !== null) {
+          const projErrors = newErrors.projects || [];
+          if (value && value.trim()) {
+            const urlRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/[\w\-\.]*)*\/?$/i;
+            if (!urlRegex.test(value)) {
+              projErrors[index] = projErrors[index] || {};
+              projErrors[index].link = 'Please enter a valid URL (e.g., https://example.com)';
+            } else {
+              if (projErrors[index]) {
+                delete projErrors[index].link;
+                if (Object.keys(projErrors[index]).length === 0) {
+                  projErrors[index] = undefined;
+                }
+              }
+            }
+          } else {
+            if (projErrors[index]) {
+              delete projErrors[index].link;
+              if (Object.keys(projErrors[index]).length === 0) {
+                projErrors[index] = undefined;
+              }
+            }
+          }
+          newErrors.projects = projErrors.filter(error => error !== undefined);
+          if (newErrors.projects.length === 0) {
+            delete newErrors.projects;
+          }
+        }
+        break;
+      case 'publicationLink':
+        if (section === 'publications' && index !== null) {
+          const pubErrors = newErrors.publications || [];
+          if (value && value.trim()) {
+            const urlRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/[\w\-\.]*)*\/?$/i;
+            if (!urlRegex.test(value)) {
+              pubErrors[index] = pubErrors[index] || {};
+              pubErrors[index].link = 'Please enter a valid URL (e.g., https://example.com)';
+            } else {
+              if (pubErrors[index]) {
+                delete pubErrors[index].link;
+                if (Object.keys(pubErrors[index]).length === 0) {
+                  pubErrors[index] = undefined;
+                }
+              }
+            }
+          } else {
+            if (pubErrors[index]) {
+              delete pubErrors[index].link;
+              if (Object.keys(pubErrors[index]).length === 0) {
+                pubErrors[index] = undefined;
+              }
+            }
+          }
+          newErrors.publications = pubErrors.filter(error => error !== undefined);
+          if (newErrors.publications.length === 0) {
+            delete newErrors.publications;
+          }
+        }
+        break;
+      case 'referenceEmail':
+        if (section === 'references' && index !== null) {
+          const refErrors = newErrors.references || [];
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (value && value.trim()) {
+            if (!emailRegex.test(value)) {
+              refErrors[index] = refErrors[index] || {};
+              refErrors[index].email = 'Please enter a valid email address';
+            } else {
+              if (refErrors[index]) {
+                delete refErrors[index].email;
+                if (Object.keys(refErrors[index]).length === 0) {
+                  refErrors[index] = undefined;
+                }
+              }
+            }
+          } else {
+            if (refErrors[index]) {
+              delete refErrors[index].email;
+              if (Object.keys(refErrors[index]).length === 0) {
+                refErrors[index] = undefined;
+              }
+            }
+          }
+          newErrors.references = refErrors.filter(error => error !== undefined);
+          if (newErrors.references.length === 0) {
+            delete newErrors.references;
+          }
+        }
+        break;
+      case 'referencePhone':
+        if (section === 'references' && index !== null) {
+          const refErrors = newErrors.references || [];
+          const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+          if (value && value.trim()) {
+            if (!phoneRegex.test(value.replace(/[\s\-\(\)]/g, ''))) {
+              refErrors[index] = refErrors[index] || {};
+              refErrors[index].phone = 'Please enter a valid phone number';
+            } else {
+              if (refErrors[index]) {
+                delete refErrors[index].phone;
+                if (Object.keys(refErrors[index]).length === 0) {
+                  refErrors[index] = undefined;
+                }
+              }
+            }
+          } else {
+            if (refErrors[index]) {
+              delete refErrors[index].phone;
+              if (Object.keys(refErrors[index]).length === 0) {
+                refErrors[index] = undefined;
+              }
+            }
+          }
+          newErrors.references = refErrors.filter(error => error !== undefined);
+          if (newErrors.references.length === 0) {
+            delete newErrors.references;
+          }
+        }
+        break;
       case 'sectionTitle':
         if (section === 'customSections' && index !== null) {
           const sectionErrors = newErrors.customSections || [];
@@ -538,7 +694,7 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
 
   const updateEducation = (index, field, value) => {
     // Validate specific fields
-    if (field === 'degree' || field === 'institution') {
+    if (field === 'degree' || field === 'institution' || field === 'year') {
       validateField(field, value, 'education', index);
     }
     const updated = [...(safeFormData.education || [])];
@@ -568,6 +724,8 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
     // Validate specific fields
     if (field === 'name') {
       validateField('projectName', value, 'projects', index);
+    } else if (field === 'link') {
+      validateField('projectLink', value, 'projects', index);
     }
     const updated = [...(safeFormData.projects || [])];
     updated[index][field] = value;
@@ -708,6 +866,10 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
     // Validate specific fields
     if (field === 'name') {
       validateField('referenceName', value, 'references', index);
+    } else if (field === 'email') {
+      validateField('referenceEmail', value, 'references', index);
+    } else if (field === 'phone') {
+      validateField('referencePhone', value, 'references', index);
     }
     const updated = [...(safeFormData.references || [])];
     updated[index][field] = value;
@@ -736,6 +898,8 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
     // Validate specific fields
     if (field === 'title') {
       validateField('publicationTitle', value, 'publications', index);
+    } else if (field === 'link') {
+      validateField('publicationLink', value, 'publications', index);
     }
     const updated = [...(safeFormData.publications || [])];
     updated[index][field] = value;
@@ -1050,14 +1214,19 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
                 <p className="text-red-500 text-sm mt-1">{errors.education[i].degree}</p>
               )}
             </div>
-            <input
-              className="input"
-              placeholder="Year"
-              value={edu.year}
-              onChange={(e) =>
-                updateEducation(i, "year", e.target.value)
-              }
-            />
+            <div className="mb-3">
+              <input
+                className={`input ${errors.education && errors.education[i] && errors.education[i].year ? 'border-red-500 focus:ring-red-500' : ''}`}
+                placeholder="Year"
+                value={edu.year}
+                onChange={(e) =>
+                  updateEducation(i, "year", e.target.value)
+                }
+              />
+              {errors.education && errors.education[i] && errors.education[i].year && (
+                <p className="text-red-500 text-sm mt-1">{errors.education[i].year}</p>
+              )}
+            </div>
             <button
               onClick={() => removeEducation(i)}
               className="mt-2 text-sm text-red-500 hover:text-red-600"
@@ -1110,14 +1279,19 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
                 updateProject(i, "technologies", e.target.value)
               }
             />
-            <input
-              className="input"
-              placeholder="Project Link (optional)"
-              value={project.link}
-              onChange={(e) =>
-                updateProject(i, "link", e.target.value)
-              }
-            />
+            <div className="mb-3">
+              <input
+                className={`input ${errors.projects && errors.projects[i] && errors.projects[i].link ? 'border-red-500 focus:ring-red-500' : ''}`}
+                placeholder="Project Link (optional)"
+                value={project.link}
+                onChange={(e) =>
+                  updateProject(i, "link", e.target.value)
+                }
+              />
+              {errors.projects && errors.projects[i] && errors.projects[i].link && (
+                <p className="text-red-500 text-sm mt-1">{errors.projects[i].link}</p>
+              )}
+            </div>
             <button
               onClick={() => removeProject(i)}
               className="mt-2 text-sm text-red-500 hover:text-red-600"
@@ -1400,22 +1574,32 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
               }
             />
             <div className="grid grid-cols-2 gap-4">
-              <input
-                className="input"
-                placeholder="Email"
-                value={ref.email}
-                onChange={(e) =>
-                  updateReference(i, "email", e.target.value)
-                }
-              />
-              <input
-                className="input"
-                placeholder="Phone"
-                value={ref.phone}
-                onChange={(e) =>
-                  updateReference(i, "phone", e.target.value)
-                }
-              />
+              <div>
+                <input
+                  className={`input ${errors.references && errors.references[i] && errors.references[i].email ? 'border-red-500 focus:ring-red-500' : ''}`}
+                  placeholder="Email"
+                  value={ref.email}
+                  onChange={(e) =>
+                    updateReference(i, "email", e.target.value)
+                  }
+                />
+                {errors.references && errors.references[i] && errors.references[i].email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.references[i].email}</p>
+                )}
+              </div>
+              <div>
+                <input
+                  className={`input ${errors.references && errors.references[i] && errors.references[i].phone ? 'border-red-500 focus:ring-red-500' : ''}`}
+                  placeholder="Phone"
+                  value={ref.phone}
+                  onChange={(e) =>
+                    updateReference(i, "phone", e.target.value)
+                  }
+                />
+                {errors.references && errors.references[i] && errors.references[i].phone && (
+                  <p className="text-red-500 text-sm mt-1">{errors.references[i].phone}</p>
+                )}
+              </div>
             </div>
             <button
               onClick={() => removeReference(i)}
@@ -1464,14 +1648,19 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
                 updatePublication(i, "date", e.target.value)
               }
             />
-            <input
-              className="input"
-              placeholder="Link (optional)"
-              value={pub.link}
-              onChange={(e) =>
-                updatePublication(i, "link", e.target.value)
-              }
-            />
+            <div>
+              <input
+                className={`input ${errors.publications && errors.publications[i] && errors.publications[i].link ? 'border-red-500 focus:ring-red-500' : ''}`}
+                placeholder="Link (optional)"
+                value={pub.link}
+                onChange={(e) =>
+                  updatePublication(i, "link", e.target.value)
+                }
+              />
+              {errors.publications && errors.publications[i] && errors.publications[i].link && (
+                <p className="text-red-500 text-sm mt-1">{errors.publications[i].link}</p>
+              )}
+            </div>
             <button
               onClick={() => removePublication(i)}
               className="mt-2 text-sm text-red-500 hover:text-red-600"
