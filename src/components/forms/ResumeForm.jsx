@@ -390,6 +390,76 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
           delete newErrors.summary;
         }
         break;
+      case 'linkedin':
+        if (value && value.trim()) {
+          const linkedinRegex = /^(https?:\/\/)?(www\.)?linkedin\.com\/(in|company)\/[\w\-]+\/?$/i;
+          if (!linkedinRegex.test(value)) {
+            newErrors.links = newErrors.links || {};
+            newErrors.links.linkedin = 'Please enter a valid LinkedIn URL (e.g., https://linkedin.com/in/yourprofile)';
+          } else {
+            if (newErrors.links) {
+              delete newErrors.links.linkedin;
+              if (Object.keys(newErrors.links).length === 0) {
+                delete newErrors.links;
+              }
+            }
+          }
+        } else {
+          if (newErrors.links) {
+            delete newErrors.links.linkedin;
+            if (Object.keys(newErrors.links).length === 0) {
+              delete newErrors.links;
+            }
+          }
+        }
+        break;
+      case 'github':
+        if (value && value.trim()) {
+          const githubRegex = /^(https?:\/\/)?(www\.)?github\.com\/[\w\-]+\/?$/i;
+          if (!githubRegex.test(value)) {
+            newErrors.links = newErrors.links || {};
+            newErrors.links.github = 'Please enter a valid GitHub URL (e.g., https://github.com/yourprofile)';
+          } else {
+            if (newErrors.links) {
+              delete newErrors.links.github;
+              if (Object.keys(newErrors.links).length === 0) {
+                delete newErrors.links;
+              }
+            }
+          }
+        } else {
+          if (newErrors.links) {
+            delete newErrors.links.github;
+            if (Object.keys(newErrors.links).length === 0) {
+              delete newErrors.links;
+            }
+          }
+        }
+        break;
+      case 'portfolio':
+      case 'website':
+        if (value && value.trim()) {
+          const urlRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/[\w\-\.]*)*\/?$/i;
+          if (!urlRegex.test(value)) {
+            newErrors.links = newErrors.links || {};
+            newErrors.links[field] = 'Please enter a valid URL (e.g., https://example.com)';
+          } else {
+            if (newErrors.links) {
+              delete newErrors.links[field];
+              if (Object.keys(newErrors.links).length === 0) {
+                delete newErrors.links;
+              }
+            }
+          }
+        } else {
+          if (newErrors.links) {
+            delete newErrors.links[field];
+            if (Object.keys(newErrors.links).length === 0) {
+              delete newErrors.links;
+            }
+          }
+        }
+        break;
       default:
         break;
     }
@@ -735,6 +805,8 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
         [field]: value,
       },
     });
+    // Validate the link field
+    validateField(field, value);
   };
 
   /* ---------- CUSTOM SECTIONS ---------- */
@@ -1509,30 +1581,50 @@ export default function ResumeForm({ formData, setFormData, onAutoSave }) {
         <h2 className="section-title">Professional Links</h2>
 
         <div className="grid grid-cols-2 gap-4">
-          <input
-            className="input"
-            placeholder="LinkedIn Profile"
-            value={safeFormData.links?.linkedin || ""}
-            onChange={(e) => updateLinks("linkedin", e.target.value)}
-          />
-          <input
-            className="input"
-            placeholder="GitHub Profile"
-            value={safeFormData.links?.github || ""}
-            onChange={(e) => updateLinks("github", e.target.value)}
-          />
-          <input
-            className="input"
-            placeholder="Portfolio Website"
-            value={safeFormData.links?.portfolio || ""}
-            onChange={(e) => updateLinks("portfolio", e.target.value)}
-          />
-          <input
-            className="input"
-            placeholder="Personal Website"
-            value={safeFormData.links?.website || ""}
-            onChange={(e) => updateLinks("website", e.target.value)}
-          />
+          <div>
+            <input
+              className={`input ${errors.links?.linkedin ? 'border-red-500 border' : ''}`}
+              placeholder="LinkedIn Profile"
+              value={safeFormData.links?.linkedin || ""}
+              onChange={(e) => updateLinks("linkedin", e.target.value)}
+            />
+            {errors.links?.linkedin && (
+              <p className="text-red-500 text-sm mt-1">{errors.links.linkedin}</p>
+            )}
+          </div>
+          <div>
+            <input
+              className={`input ${errors.links?.github ? 'border-red-500 border' : ''}`}
+              placeholder="GitHub Profile"
+              value={safeFormData.links?.github || ""}
+              onChange={(e) => updateLinks("github", e.target.value)}
+            />
+            {errors.links?.github && (
+              <p className="text-red-500 text-sm mt-1">{errors.links.github}</p>
+            )}
+          </div>
+          <div>
+            <input
+              className={`input ${errors.links?.portfolio ? 'border-red-500 border' : ''}`}
+              placeholder="Portfolio Website"
+              value={safeFormData.links?.portfolio || ""}
+              onChange={(e) => updateLinks("portfolio", e.target.value)}
+            />
+            {errors.links?.portfolio && (
+              <p className="text-red-500 text-sm mt-1">{errors.links.portfolio}</p>
+            )}
+          </div>
+          <div>
+            <input
+              className={`input ${errors.links?.website ? 'border-red-500 border' : ''}`}
+              placeholder="Personal Website"
+              value={safeFormData.links?.website || ""}
+              onChange={(e) => updateLinks("website", e.target.value)}
+            />
+            {errors.links?.website && (
+              <p className="text-red-500 text-sm mt-1">{errors.links.website}</p>
+            )}
+          </div>
         </div>
       </section>
 
