@@ -23,8 +23,22 @@ const ResumeSchema = new mongoose.Schema(
     memberships: [Object],
     links: Object,
     customSections: [Object],
+    shareableLink: {
+      type: String,
+      default: null,
+    },
+    isPublic: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
+);
+
+// Create a sparse, unique index only for non-null values
+ResumeSchema.index(
+  { shareableLink: 1 },
+  { unique: true, sparse: true }
 );
 
 export default mongoose.models.Resume ||
