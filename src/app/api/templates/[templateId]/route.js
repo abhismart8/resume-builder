@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/db";
 import Template from "@/models/Template";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { sanitizeString } from "@/lib/sanitize";
 
 export async function GET(request, { params }) {
   try {
@@ -22,7 +23,7 @@ export async function GET(request, { params }) {
   } catch (error) {
     console.error("GET template error:", error);
     return Response.json(
-      { success: false, error: error.message },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -35,14 +36,34 @@ export async function PUT(request, { params }) {
     if (!session || session.user.role !== "admin") {
       return Response.json(
         { success: false, error: "Unauthorized" },
-        { status: 401 }
+        { status: 403 }
       );
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return Response.json(
+        { success: false, error: "Invalid JSON in request body" },
+        { status: 400 }
+      );
+    }
+
+    // Sanitize string fields
+    if (body.name) {
+      body.name = sanitizeString(body.name);
+    }
+    if (body.description) {
+      body.description = sanitizeString(body.description);
+    }
+    if (body.category) {
+      body.category = sanitizeString(body.category);
     }
 
     await connectDB();
 
     const { templateId } = await params;
-    const body = await request.json();
 
     const template = await Template.findByIdAndUpdate(
       templateId,
@@ -64,7 +85,7 @@ export async function PUT(request, { params }) {
   } catch (error) {
     console.error("PUT template error:", error);
     return Response.json(
-      { success: false, error: error.message },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -77,7 +98,7 @@ export async function DELETE(request, { params }) {
     if (!session || session.user.role !== "admin") {
       return Response.json(
         { success: false, error: "Unauthorized" },
-        { status: 401 }
+        { status: 403 }
       );
     }
 
@@ -101,7 +122,7 @@ export async function DELETE(request, { params }) {
   } catch (error) {
     console.error("DELETE template error:", error);
     return Response.json(
-      { success: false, error: error.message },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }

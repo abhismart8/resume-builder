@@ -106,6 +106,10 @@ export async function PUT(request, { params }) {
     // Add user ID for validation
     body.userId = session.user.id;
 
+    // Remove shareableLink and isPublic from updates (they should only be set via dedicated endpoints)
+    delete body.shareableLink;
+    delete body.isPublic;
+
     // Validate request body
     const validation = validateResumeBody(body);
     if (!validation.isValid) {

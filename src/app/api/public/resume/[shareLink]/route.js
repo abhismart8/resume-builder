@@ -34,7 +34,7 @@ export async function GET(request, { params }) {
   } catch (error) {
     console.error("GET public resume error:", error);
     return Response.json(
-      { success: false, error: error.message },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }

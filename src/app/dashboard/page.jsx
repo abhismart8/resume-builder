@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -8,23 +8,57 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [shareLinks, setShareLinks] = useState({});
   const [copyNotification, setCopyNotification] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState(null);
+  const ITEMS_PER_PAGE = 10;
+  const PAGES_TO_SHOW = 5; // Change this value to show more/fewer page numbers
+
+  // Calculate which page numbers to display
+  const pageNumbers = useMemo(() => {
+    if (!pagination) return [];
+
+    const totalPages = pagination.totalPages;
+    const halfPages = Math.floor(PAGES_TO_SHOW / 2);
+    let startPage = Math.max(1, currentPage - halfPages);
+    let endPage = Math.min(totalPages, startPage + PAGES_TO_SHOW - 1);
+
+    // Adjust startPage if we're near the end
+    if (endPage - startPage + 1 < PAGES_TO_SHOW) {
+      startPage = Math.max(1, endPage - PAGES_TO_SHOW + 1);
+    }
+
+    const pages = [];
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }, [currentPage, pagination, PAGES_TO_SHOW]);
 
   useEffect(() => {
-    fetchResumes();
-  }, []);
+    fetchResumes(currentPage);
+  }, [currentPage]);
 
-  const fetchResumes = async () => {
-    const res = await fetch("/api/resumes", { cache: "no-store" });
-    const data = await res.json();
-    setResumes(data.resumes || []);
-    
-    // Fetch share links for each resume
-    if (data.resumes) {
-      data.resumes.forEach((resume) => {
-        fetchShareLink(resume._id);
+  const fetchResumes = async (page) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/resumes?page=${page}&limit=${ITEMS_PER_PAGE}`, {
+        cache: "no-store",
       });
+      const data = await res.json();
+      setResumes(data.resumes || []);
+      setPagination(data.pagination);
+
+      // Fetch share links for each resume
+      if (data.resumes) {
+        data.resumes.forEach((resume) => {
+          fetchShareLink(resume._id);
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching resumes:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const fetchShareLink = async (resumeId) => {
@@ -108,6 +142,18 @@ export default function DashboardPage() {
     setResumes((prev) => prev.filter((r) => r._id !== id));
   };
 
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pagination?.hasMore) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
   if (loading) {
     return <div className="p-6">Loading resumes...</div>;
   }
@@ -140,90 +186,164 @@ export default function DashboardPage() {
           No resumes yet. Click <b>Add Resume</b> to create one.
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-6">
-          {resumes.map((resume) => {
-            const shareInfo = shareLinks[resume._id];
-            const hasShareLink = shareInfo?.shareableLink;
-            const fullShareUrl = shareInfo?.shareUrl
-              ? `${typeof window !== "undefined" ? window.location.origin : ""}${shareInfo.shareUrl}`
-              : null;
+        <>
+          <div className="grid grid-cols-2 gap-6">
+            {resumes.map((resume) => {
+              const shareInfo = shareLinks[resume._id];
+              const hasShareLink = shareInfo?.shareableLink;
+              const fullShareUrl = shareInfo?.shareUrl
+                ? `${typeof window !== "undefined" ? window.location.origin : ""}${shareInfo.shareUrl}`
+                : null;
 
-            return (
-              <div key={resume._id} className="card p-6 flex flex-col">
-                {/* Resume Info */}
-                <div className="mb-4">
-                  <h2 className="font-semibold text-lg">
-                    {resume.personal?.name || "Untitled Resume"}
-                  </h2>
+              return (
+                <div key={resume._id} className="card p-6 flex flex-col">
+                  {/* Resume Info */}
+                  <div className="mb-4">
+                    <h2 className="font-semibold text-lg">
+                      {resume.personal?.name || "Untitled Resume"}
+                    </h2>
 
-                  <p className="text-sm text-gray-500 mt-1">
-                    Template: {resume.templateId}
-                  </p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Template: {resume.templateId}
+                    </p>
 
-                  <p className="text-xs text-gray-400 mt-2">
-                    Created: {new Date(resume.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                      Created: {new Date(resume.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
 
-                {/* Share Link Section */}
-                <div className="border-t pt-4 mb-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">
-                    Public Share Link
-                  </p>
-                  {hasShareLink ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 bg-gray-100 p-2 rounded">
-                        <input
-                          type="text"
-                          value={fullShareUrl}
-                          readOnly
-                          className="flex-1 bg-transparent text-xs text-gray-700 outline-none"
-                        />
+                  {/* Share Link Section */}
+                  <div className="border-t pt-4 mb-4">
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      Public Share Link
+                    </p>
+                    {hasShareLink ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 bg-gray-100 p-2 rounded">
+                          <input
+                            type="text"
+                            value={fullShareUrl}
+                            readOnly
+                            className="flex-1 bg-transparent text-xs text-gray-700 outline-none"
+                          />
+                          <button
+                            onClick={() => copyToClipboard(fullShareUrl)}
+                            className="text-blue-600 hover:text-blue-700 text-xs font-medium"
+                            title="Copy link"
+                          >
+                            📋
+                          </button>
+                        </div>
                         <button
-                          onClick={() => copyToClipboard(fullShareUrl)}
-                          className="text-blue-600 hover:text-blue-700 text-xs font-medium"
-                          title="Copy link"
+                          onClick={() => revokeShareLink(resume._id)}
+                          className="w-full text-xs text-red-600 hover:text-red-700 font-medium py-1"
                         >
-                          📋
+                          Revoke Access
                         </button>
                       </div>
+                    ) : (
                       <button
-                        onClick={() => revokeShareLink(resume._id)}
-                        className="w-full text-xs text-red-600 hover:text-red-700 font-medium py-1"
+                        onClick={() => generateShareLink(resume._id)}
+                        className="w-full bg-green-500 hover:bg-green-600 text-white text-xs font-medium py-2 rounded"
                       >
-                        Revoke Access
+                        Generate Share Link
                       </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => generateShareLink(resume._id)}
-                      className="w-full bg-green-500 hover:bg-green-600 text-white text-xs font-medium py-2 rounded"
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <Link
+                      href={`/builder/${resume.templateId}?resumeId=${resume._id}`}
+                      className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded"
                     >
-                      Generate Share Link
+                      Open
+                    </Link>
+
+                    <button
+                      onClick={() => deleteResume(resume._id)}
+                      className="flex-1 bg-red-100 hover:bg-red-200 text-red-600 text-sm py-2 rounded"
+                    >
+                      Delete
                     </button>
-                  )}
+                  </div>
                 </div>
+              );
+            })}
+          </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-3">
-                  <Link
-                    href={`/builder/${resume.templateId}?resumeId=${resume._id}`}
-                    className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded"
-                  >
-                    Open
-                  </Link>
+          {/* PAGINATION CONTROLS */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="mt-8 flex items-center justify-center gap-2">
+              <button
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed text-gray-800 font-medium rounded"
+              >
+                ← Previous
+              </button>
 
+              <div className="flex gap-1 items-center">
+                {/* First page button if not in range */}
+                {pageNumbers[0] > 1 && (
+                  <>
+                    <button
+                      onClick={() => setCurrentPage(1)}
+                      className="px-3 py-2 font-medium rounded bg-gray-300 text-gray-800 hover:bg-gray-400 transition-colors"
+                    >
+                      1
+                    </button>
+                    {pageNumbers[0] > 2 && (
+                      <span className="text-gray-500 font-medium">...</span>
+                    )}
+                  </>
+                )}
+
+                {/* Page number buttons */}
+                {pageNumbers.map((pageNum) => (
                   <button
-                    onClick={() => deleteResume(resume._id)}
-                    className="flex-1 bg-red-100 hover:bg-red-200 text-red-600 text-sm py-2 rounded"
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`px-3 py-2 font-medium rounded transition-colors ${
+                      currentPage === pageNum
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-300 text-gray-800 hover:bg-gray-400"
+                    }`}
                   >
-                    Delete
+                    {pageNum}
                   </button>
-                </div>
+                ))}
+
+                {/* Last page button if not in range */}
+                {pageNumbers[pageNumbers.length - 1] < pagination.totalPages && (
+                  <>
+                    {pageNumbers[pageNumbers.length - 1] < pagination.totalPages - 1 && (
+                      <span className="text-gray-500 font-medium">...</span>
+                    )}
+                    <button
+                      onClick={() => setCurrentPage(pagination.totalPages)}
+                      className="px-3 py-2 font-medium rounded bg-gray-300 text-gray-800 hover:bg-gray-400 transition-colors"
+                    >
+                      {pagination.totalPages}
+                    </button>
+                  </>
+                )}
               </div>
-            );
-          })}
-        </div>
+
+              <button
+                onClick={handleNextPage}
+                disabled={!pagination.hasMore}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed text-gray-800 font-medium rounded"
+              >
+                Next →
+              </button>
+
+              <div className="text-gray-700 font-medium ml-4">
+                ({pagination.total} total)
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

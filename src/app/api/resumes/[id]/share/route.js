@@ -61,11 +61,11 @@ export async function POST(request, { params }) {
       success: true,
       shareableLink,
       shareUrl: `/resume/share/${shareableLink}`,
-    });
+    }, { status: 201 });
   } catch (error) {
     console.error("[Share POST] Error:", error);
     return Response.json(
-      { success: false, error: error.message },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -113,7 +113,7 @@ export async function DELETE(request, { params }) {
   } catch (error) {
     console.error("[Share DELETE] Error:", error);
     return Response.json(
-      { success: false, error: error.message },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -154,7 +154,7 @@ export async function GET(request, { params }) {
   } catch (error) {
     console.error("[Share GET] Error:", error);
     return Response.json(
-      { success: false, error: error.message },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }

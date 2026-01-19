@@ -1,7 +1,17 @@
 // Server-side PDF generation using html2pdf.js approach
 export async function POST(request) {
   try {
-    const { resumeId, templateId, data, templateStyles = {} } = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return Response.json(
+        { success: false, error: "Invalid JSON in request body" },
+        { status: 400 }
+      );
+    }
+
+    const { resumeId, templateId, data, templateStyles = {} } = body;
 
     if (!data) {
       return Response.json(
@@ -22,7 +32,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("PDF generation error:", error);
     return Response.json(
-      { success: false, error: error.message },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }
